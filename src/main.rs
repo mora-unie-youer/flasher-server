@@ -31,9 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	let config = Configuration::config_file(&config_file)
 		.unwrap_or_else(|| panic!("Couldn't read config file"));
 
-	let server = Server::new(&config).await;
-	server.run();
-	std::mem::forget(server);
-
+	let mut server = Server::new(&config).await;
+	server.run().await;
 	Ok(())
 }
