@@ -38,7 +38,7 @@ impl Server {
 		// Creating database connection
 		let database = establish_connection(&config).await;
 		// Creating runtime builder
-		let runtime = Builder::new_multi_thread().build().unwrap();
+		let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
 
 		Server {
 			config: config.clone(),
@@ -76,6 +76,7 @@ impl Server {
 		Ok(self.runtime.spawn(async move {
 			loop {
 				let (stream, addr) = socket.accept().await.unwrap();
+				println!("Accepted connection: {:?} - {:?}", addr, stream);
 			}
 		}))
 	}
