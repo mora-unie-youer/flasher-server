@@ -2,7 +2,7 @@ use crate::Settings;
 
 use sea_orm::{Database, DatabaseConnection};
 
-pub async fn establish_connection(config: Settings) -> DatabaseConnection {
+pub async fn establish_connection(config: &Settings) -> DatabaseConnection {
 	let url = format!(
 		"{}://{}:{}@{}/{}",
 		config.database.db_type,

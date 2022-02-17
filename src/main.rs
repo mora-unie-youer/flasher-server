@@ -5,6 +5,7 @@ use std::process::exit;
 use getopts::Options;
 
 use flasher_server::{establish_connection, Settings};
+use tokio::net::TcpListener;
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/flasher.toml";
 
@@ -30,8 +31,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	let config = Settings::config_file(&config_file)
 		.unwrap_or_else(|| panic!("Couldn't read config file"));
 
-	let database = establish_connection(config).await;
-	println!("{:?}", database);
+	let database = establish_connection(&config).await;
 
-	Ok(())
+	let listen_addr = config.server.listen;
+	let listener = TcpListener::bind(&listen_addr).await?;
+
+	loop {
+		let (stream, addr) = listener.accept().await?;
+
+		tokio::spawn(async move {
+			println!("Accepted connection: {:?}, {:?}", stream, addr);
+		});
+	}
 }
