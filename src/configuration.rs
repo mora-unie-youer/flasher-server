@@ -3,7 +3,7 @@ use std::io::Read;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct DatabaseConfiguration {
 	#[serde(rename = "type")]
 	pub db_type: String,
@@ -17,14 +17,18 @@ pub struct DatabaseConfiguration {
 	pub db_name: String,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ServerListenConfiguration {
 	#[serde(default = "default_server_listen_host")]
 	pub host: String,
 	#[serde(default = "default_server_listen_port")]
 	pub port: u16,
+	#[serde(default = "default_server_listen_tcp")]
+	pub tcp: bool,
+	#[serde(default = "default_server_listen_udp")]
+	pub udp: bool,
 }
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ServerConfiguration {
 	#[serde(default)]
 	pub listen: ServerListenConfiguration,
@@ -33,7 +37,7 @@ pub struct ServerConfiguration {
 	pub friends: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Configuration {
 	#[serde(default)]
 	pub database: DatabaseConfiguration,
@@ -74,6 +78,14 @@ fn default_server_listen_host() -> String {
 
 fn default_server_listen_port() -> u16 {
 	6666
+}
+
+fn default_server_listen_tcp() -> bool {
+	true
+}
+
+fn default_server_listen_udp() -> bool {
+	true
 }
 
 fn default_server_friends() -> Vec<String> {

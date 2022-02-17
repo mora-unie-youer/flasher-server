@@ -2,6 +2,7 @@ use std::env;
 use std::error::Error;
 use std::process::exit;
 
+use flasher_server::Server;
 use getopts::Options;
 
 use flasher_server::Configuration;
@@ -29,6 +30,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 	let config = Configuration::config_file(&config_file)
 		.unwrap_or_else(|| panic!("Couldn't read config file"));
+
+	let server = Server::new(&config).await;
+	server.run();
+	std::mem::forget(server);
 
 	Ok(())
 }
