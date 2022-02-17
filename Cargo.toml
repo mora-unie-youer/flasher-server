@@ -9,3 +9,4 @@ repository = "https://github.com/mora-unie-youer/flasher-server"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
+toml = "0.5.8"
