@@ -1,11 +1,10 @@
-use std::{env, net::SocketAddr};
+use std::env;
 use std::error::Error;
 use std::process::exit;
 
 use getopts::Options;
 
-use flasher_server::{establish_connection, Settings};
-use tokio::net::TcpListener;
+use flasher_server::Configuration;
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/flasher.toml";
 
@@ -28,22 +27,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	let config_file = opt_matches.opt_str("c")
 		.unwrap_or(DEFAULT_CONFIG_FILE.to_string());
 
-	let config = Settings::config_file(&config_file)
+	let config = Configuration::config_file(&config_file)
 		.unwrap_or_else(|| panic!("Couldn't read config file"));
 
-	let database = establish_connection(&config).await;
-
-	let addr = SocketAddr::new(
-		config.server.listen.host.parse()?,
-		config.server.listen.port
-	);
-	let listener = TcpListener::bind(&addr).await?;
-
-	loop {
-		let (stream, addr) = listener.accept().await?;
-
-		tokio::spawn(async move {
-			println!("Accepted connection: {:?}, {:?}", stream, addr);
-		});
-	}
+	Ok(())
 }

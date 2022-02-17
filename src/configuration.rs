@@ -4,7 +4,7 @@ use std::io::Read;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct DatabaseSettings {
+pub struct DatabaseConfiguration {
 	#[serde(rename = "type")]
 	pub db_type: String,
 	#[serde(default = "default_database_host")]
@@ -18,31 +18,31 @@ pub struct DatabaseSettings {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct ServerListenSettings {
+pub struct ServerListenConfiguration {
 	#[serde(default = "default_server_listen_host")]
 	pub host: String,
 	#[serde(default = "default_server_listen_port")]
 	pub port: u16,
 }
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct ServerSettings {
+pub struct ServerConfiguration {
 	#[serde(default)]
-	pub listen: ServerListenSettings,
+	pub listen: ServerListenConfiguration,
 
 	#[serde(default = "default_server_friends")]
 	pub friends: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Settings {
+pub struct Configuration {
 	#[serde(default)]
-	pub database: DatabaseSettings,
+	pub database: DatabaseConfiguration,
 	#[serde(default)]
-	pub server: ServerSettings,
+	pub server: ServerConfiguration,
 }
 
-impl Settings {
-	pub fn config_file(filename: &str) -> Option<Settings> {
+impl Configuration {
+	pub fn config_file(filename: &str) -> Option<Configuration> {
 		// Checking if file can be opened
 		match File::open(filename) {
 			Ok(mut file) => {
