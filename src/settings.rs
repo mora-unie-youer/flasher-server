@@ -17,10 +17,21 @@ pub struct DatabaseSettings {
 	pub db_name: String,
 }
 
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct ServerSettings {
+	#[serde(default = "default_server_listen")]
+	pub listen: String,
+
+	#[serde(default = "default_server_friends")]
+	pub friends: Vec<String>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
 	#[serde(default)]
 	pub database: DatabaseSettings,
+	#[serde(default)]
+	pub server: ServerSettings,
 }
 
 impl Settings {
@@ -48,4 +59,12 @@ fn default_database_host() -> String {
 
 fn default_database_name() -> String {
 	String::from("flasher")
+}
+
+fn default_server_listen() -> String {
+	String::from("[::1]:6666")
+}
+
+fn default_server_friends() -> Vec<String> {
+	vec![]
 }
