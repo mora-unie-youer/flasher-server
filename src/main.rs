@@ -4,7 +4,7 @@ use std::process::exit;
 
 use getopts::Options;
 
-use flasher_server::Settings;
+use flasher_server::{establish_connection, Settings};
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/flasher.toml";
 
@@ -29,7 +29,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 	let config = Settings::config_file(&config_file)
 		.unwrap_or_else(|| panic!("Couldn't read config file"));
-	println!("{:?}", config);
+
+	let database = establish_connection(config).await;
+	println!("{:?}", database);
 
 	Ok(())
 }
