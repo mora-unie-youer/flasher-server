@@ -8,6 +8,7 @@ repository = "https://github.com/mora-unie-youer/flasher-server"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+getopts = "0.2.21"
 serde = { version = "1.0.136", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 toml = "0.5.8"
