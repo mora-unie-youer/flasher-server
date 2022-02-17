@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, net::SocketAddr};
 use std::error::Error;
 use std::process::exit;
 
@@ -33,8 +33,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 	let database = establish_connection(&config).await;
 
-	let listen_addr = config.server.listen;
-	let listener = TcpListener::bind(&listen_addr).await?;
+	let addr = SocketAddr::new(
+		config.server.listen.host.parse()?,
+		config.server.listen.port
+	);
+	let listener = TcpListener::bind(&addr).await?;
 
 	loop {
 		let (stream, addr) = listener.accept().await?;

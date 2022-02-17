@@ -18,9 +18,16 @@ pub struct DatabaseSettings {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
+pub struct ServerListenSettings {
+	#[serde(default = "default_server_listen_host")]
+	pub host: String,
+	#[serde(default = "default_server_listen_port")]
+	pub port: u16,
+}
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ServerSettings {
-	#[serde(default = "default_server_listen")]
-	pub listen: String,
+	#[serde(default)]
+	pub listen: ServerListenSettings,
 
 	#[serde(default = "default_server_friends")]
 	pub friends: Vec<String>,
@@ -61,8 +68,12 @@ fn default_database_name() -> String {
 	String::from("flasher")
 }
 
-fn default_server_listen() -> String {
-	String::from("[::1]:6666")
+fn default_server_listen_host() -> String {
+	String::from("[::1]")
+}
+
+fn default_server_listen_port() -> u16 {
+	6666
 }
 
 fn default_server_friends() -> Vec<String> {
