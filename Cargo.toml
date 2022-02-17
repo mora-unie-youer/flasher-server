@@ -1,7 +1,9 @@
 [package]
 name = "flasher-server"
-version = "0.1.0"
+authors = ["Mora Unie Youer <mora_unie_youer@riseup.net>", "MicrochipQ <microchipq@gmail.com>"]
+version = "0.0.0"
 edition = "2021"
+repository = "https://github.com/mora-unie-youer/flasher-server"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
