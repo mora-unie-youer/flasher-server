@@ -9,6 +9,7 @@ repository = "https://github.com/mora-unie-youer/flasher-server"
 
 [dependencies]
 getopts = "0.2.21"
+sea-orm = { version = "0.6.0", features = ["sqlx-mysql", "sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
 serde = { version = "1.0.136", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 toml = "0.5.8"
