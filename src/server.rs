@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -26,6 +27,7 @@ pub struct Server {
 }
 
 impl Server {
+	/// Create new server instance
 	pub async fn new(config: &Configuration) -> Server {
 		// Creating address from server.listen
 		let address = SocketAddr::new(
@@ -46,7 +48,27 @@ impl Server {
 		}
 	}
 
+	/// Run server
 	pub fn run(&self) {
 		println!("{:#?}", self);
+		if self.config.server.listen.tcp {
+			if let Err(e) = self.start_tcp_server() {
+				println!("Failed to start TCP listener on {}: {:?}", self.address, e);
+			}
+		}
+
+		if self.config.server.listen.udp {
+			if let Err(e) = self.start_udp_server() {
+				println!("Failed to start UDP listener on {}: {:?}", self.address, e);
+			}
+		}
+	}
+
+	fn start_udp_server(&self) -> Result<(), Box<dyn Error>> {
+		Ok(())
+	}
+
+	fn start_tcp_server(&self) -> Result<(), Box<dyn Error>> {
+		Ok(())
 	}
 }
