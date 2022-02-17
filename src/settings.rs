@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct DatabaseSettings {
+	#[serde(rename = "type")]
+	pub db_type: String,
 	#[serde(default = "default_database_host")]
 	pub host: String,
 
