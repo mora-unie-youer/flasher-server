@@ -332,6 +332,7 @@ dependencies = [
 name = "flasher-server"
 version = "0.0.0"
 dependencies = [
+ "futures",
  "getopts",
  "sea-orm",
  "serde",
