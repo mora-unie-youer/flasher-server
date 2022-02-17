@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 
-use tokio::net::{TcpStream, TcpListener};
+use tokio::net::{TcpStream, TcpListener, UdpSocket};
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
@@ -56,14 +56,21 @@ impl Server {
 		if self.config.server.listen.tcp {
 			let handle = self.start_tcp_server().await;
 			handles.push(
-				handle.unwrap_or_else(|e| panic!("Failed to start TCP listener on {}: {:?}", self.address, e))
+				handle.unwrap_or_else(
+					|e|
+						panic!("Failed to start TCP listener on {}: {:?}", self.address, e)
+				)
 			);
 		}
 
 		if self.config.server.listen.udp {
-			if let Err(e) = self.start_udp_server().await {
-				println!("Failed to start UDP listener on {}: {:?}", self.address, e);
-			}
+			let handle = self.start_udp_server().await;
+			handles.push(
+				handle.unwrap_or_else(
+					|e|
+						panic!("Failed to start UDP listener on {}: {:?}", self.address, e)
+				)
+			);
 		}
 
 		futures::future::join_all(handles).await;
@@ -81,7 +88,15 @@ impl Server {
 		}))
 	}
 
-	async fn start_udp_server(&self) -> Result<(), Box<dyn Error>> {
-		Ok(())
+	async fn start_udp_server(&self) -> Result<JoinHandle<()>, Box<dyn Error>> {
+		// Creating UDP socket
+		let socket = UdpSocket::bind(self.address).await?;
+		Ok(self.runtime.spawn(async move {
+			let mut buf = vec![0; 1024];
+			loop {
+				let (len, addr) = socket.recv_from(&mut buf).await.unwrap();
+				println!("Received {:?} bytes from {:?}", len, addr);
+			}
+		}))
 	}
 }
