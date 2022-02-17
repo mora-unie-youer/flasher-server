@@ -13,8 +13,8 @@ pub struct DatabaseSettings {
 	pub username: String,
 	pub password: String,
 
-	#[serde(default = "default_database_name")]
-	pub name: String,
+	#[serde(rename = "name", default = "default_database_name")]
+	pub db_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
