@@ -3,8 +3,11 @@ use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+use core::convert::TryInto;
+
 use sea_orm::DatabaseConnection;
 
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpStream, TcpListener, UdpSocket};
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::Mutex;
@@ -83,9 +86,9 @@ impl Server {
 		// Creating TCP listener thread
 		Ok(self.runtime.spawn(async move {
 			loop {
-				let (stream, addr) = socket.accept().await.unwrap();
+				let (mut stream, addr) = socket.accept().await.unwrap();
 				println!("Accepted connection: {:?} - {:?}", addr, stream);
-				if let Err(e) = process_tcp(stream, addr, &mut buf).await {
+				if let Err(e) = process_tcp(&mut stream, addr, &mut buf).await {
 					println!("Error when processing TCP connection: {:?}", e);
 				}
 			}
@@ -109,10 +112,21 @@ impl Server {
 }
 
 async fn process_tcp(
-	stream: TcpStream,
+	stream: &mut TcpStream,
 	addr: SocketAddr,
 	buf: &mut Vec<u8>
 ) -> Result<(), Box<dyn Error>> {
+	// Reading data from stream
+	let len = stream.read(buf).await?;
+	// If data is less than 12 bytes (magic word + operation), exitting
+	if len < 12 { return Ok(()); }
+	// Checking for magic word
+	let magic = String::from_utf8(buf[0..=7].to_vec())?;
+	if !magic.eq("MoraChip") { return Ok(()); }
+	// Getting operation
+	let op = u32::from_be_bytes(buf[8..=11].try_into()?);
+	// Writing debug information to stream
+	stream.write_all(format!("{} {}\n", len, op).as_bytes()).await?;
 	Ok(())
 }
 
@@ -122,5 +136,14 @@ async fn process_udp(
 	buf: &mut Vec<u8>,
 	len: usize
 ) -> Result<(), Box<dyn Error>> {
+	// If data is less than 12 bytes (magic word + operation), exitting
+	if len < 12 { return Ok(()); }
+	// Checking for magic word
+	let magic = String::from_utf8(buf[0..=7].to_vec())?;
+	if !magic.eq("MoraChip") { return Ok(()); }
+	// Getting operation
+	let op = u32::from_be_bytes(buf[8..=11].try_into()?);
+	// Writing debug information to stream
+	socket.send_to(format!("{} {}\n", len, op).as_bytes(), addr).await?;
 	Ok(())
 }
