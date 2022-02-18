@@ -1,11 +1,11 @@
 use std::env;
 use std::error::Error;
 use std::process::exit;
+use std::sync::Arc;
 
-use flasher_server::Server;
 use getopts::Options;
 
-use flasher_server::Configuration;
+use flasher_server::{Configuration, TcpServer};
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/flasher.toml";
 
@@ -28,10 +28,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	let config_file = opt_matches.opt_str("c")
 		.unwrap_or(DEFAULT_CONFIG_FILE.to_string());
 
-	let config = Configuration::config_file(&config_file)
-		.unwrap_or_else(|| panic!("Couldn't read config file"));
+	let config = Arc::new(Configuration::config_file(&config_file)
+		.unwrap_or_else(|| panic!("Couldn't read config file")));
 
-	let server = Server::new(&config).await;
-	server.run().await;
+	let tcp_server = TcpServer::new(config).await;
+	let handle = tcp_server.start().await?;
+	handle.await?;
+
 	Ok(())
 }

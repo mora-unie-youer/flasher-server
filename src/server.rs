@@ -1,149 +1,71 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use core::convert::TryInto;
-
 use sea_orm::DatabaseConnection;
 
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpStream, TcpListener, UdpSocket};
-use tokio::runtime::{Builder, Runtime};
-use tokio::sync::Mutex;
+use tokio::net::{TcpStream, TcpListener};
 use tokio::task::JoinHandle;
 
-use crate::{Configuration, establish_connection};
+use crate::{establish_connection, Configuration};
 
-/// Flasher server structure
-#[derive(Debug)]
-pub struct Server {
-	/// Server configuration
-	pub config: Configuration,
+/// TCP server
+pub struct TcpServer {
 	/// Server address
 	pub address: SocketAddr,
-	/// Server runtime
-	pub runtime: Runtime,
-	/// Database used for flasher
-	pub database: DatabaseConnection,
-	/// Connections to friends
-	pub friends: Arc<Mutex<HashMap<String, Option<TcpStream>>>>,
+	/// Server configuration
+	pub config: Arc<Configuration>,
+	/// Database
+	pub database: DatabaseConnection
 }
 
-impl Server {
-	/// Create new server instance
-	pub async fn new(config: &Configuration) -> Server {
-		// Creating address from server.listen
+impl TcpServer {
+	pub async fn new(config: Arc<Configuration>) -> TcpServer {
+		// Creating server address using config.server.listen
 		let address = SocketAddr::new(
 			config.server.listen.host.parse().unwrap(),
 			config.server.listen.port
 		);
 		// Creating database connection
 		let database = establish_connection(&config).await;
-		// Creating runtime builder
-		let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
-
-		Server {
-			config: config.clone(),
+		// Creating server
+		TcpServer {
 			address,
-			database,
-			runtime,
-			friends: Arc::new(Mutex::new(HashMap::new()))
+			config: config.clone(),
+			database
 		}
 	}
 
-	/// Run server
-	pub async fn run(&self) {
-		let mut handles = vec![];
-
-		if self.config.server.listen.tcp {
-			let handle = self.start_tcp_server().await;
-			handles.push(
-				handle.unwrap_or_else(
-					|e|
-						panic!("Failed to start TCP listener on {}: {:?}", self.address, e)
-				)
-			);
-		}
-
-		if self.config.server.listen.udp {
-			let handle = self.start_udp_server().await;
-			handles.push(
-				handle.unwrap_or_else(
-					|e|
-						panic!("Failed to start UDP listener on {}: {:?}", self.address, e)
-				)
-			);
-		}
-		// Looping almost forever, because listeners run until error, I guess
-		futures::future::join_all(handles).await;
-	}
-
-	async fn start_tcp_server(&self) -> Result<JoinHandle<()>, Box<dyn Error>> {
-		// Creating TCP listener
+	pub async fn start(self) -> Result<JoinHandle<()>, Box<dyn Error>> {
+		// Creating TCP socket
 		let socket = TcpListener::bind(self.address).await?;
-		let mut buf = vec![0; 1024];
-		// Creating TCP listener thread
-		Ok(self.runtime.spawn(async move {
+		// Creating TCP listener
+		let handle = tokio::spawn(async move {
+			// Listening for all connections
 			loop {
+				// Accepting connections
 				let (mut stream, addr) = socket.accept().await.unwrap();
 				println!("Accepted connection: {:?} - {:?}", addr, stream);
-				if let Err(e) = process_tcp(&mut stream, addr, &mut buf).await {
-					println!("Error when processing TCP connection: {:?}", e);
-				}
+				// Creating a new buffer for client
+				let mut buf = vec![0u8; 1024];
+				// Spawning peer process
+				let _ = tokio::spawn(async move {
+					// Processing peer
+					if let Err(e) = process(&mut stream, addr, &mut buf).await {
+						println!("Error when processing TCP connection: {:?}", e);
+					}
+				});
 			}
-		}))
-	}
+		});
 
-	async fn start_udp_server(&self) -> Result<JoinHandle<()>, Box<dyn Error>> {
-		// Creating UDP socket
-		let socket = UdpSocket::bind(self.address).await?;
-		let mut buf = vec![0; 1024];
-		Ok(self.runtime.spawn(async move {
-			loop {
-				let (len, addr) = socket.recv_from(&mut buf).await.unwrap();
-				println!("Received {:?} bytes from {:?}", len, addr);
-				if let Err(e) = process_udp(&socket, addr, &mut buf, len).await {
-					println!("Error when processing UDP connection: {:?}", e);
-				}
-			}
-		}))
+		Ok(handle)
 	}
 }
 
-async fn process_tcp(
+async fn process(
 	stream: &mut TcpStream,
 	addr: SocketAddr,
 	buf: &mut Vec<u8>
 ) -> Result<(), Box<dyn Error>> {
-	// Reading data from stream
-	let len = stream.read(buf).await?;
-	// If data is less than 12 bytes (magic word + operation), exitting
-	if len < 12 { return Ok(()); }
-	// Checking for magic word
-	let magic = String::from_utf8(buf[0..=7].to_vec())?;
-	if !magic.eq("MoraChip") { return Ok(()); }
-	// Getting operation
-	let op = u32::from_be_bytes(buf[8..=11].try_into()?);
-	// Writing debug information to stream
-	stream.write_all(format!("{} {}\n", len, op).as_bytes()).await?;
-	Ok(())
-}
-
-async fn process_udp(
-	socket: &UdpSocket,
-	addr: SocketAddr,
-	buf: &mut Vec<u8>,
-	len: usize
-) -> Result<(), Box<dyn Error>> {
-	// If data is less than 12 bytes (magic word + operation), exitting
-	if len < 12 { return Ok(()); }
-	// Checking for magic word
-	let magic = String::from_utf8(buf[0..=7].to_vec())?;
-	if !magic.eq("MoraChip") { return Ok(()); }
-	// Getting operation
-	let op = u32::from_be_bytes(buf[8..=11].try_into()?);
-	// Writing debug information to stream
-	socket.send_to(format!("{} {}\n", len, op).as_bytes(), addr).await?;
 	Ok(())
 }
