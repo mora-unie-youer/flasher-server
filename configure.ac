@@ -3,8 +3,8 @@
 
 AC_PREREQ([2.69])
 AC_INIT([flasher-server], [0.0.0], [mora_unie_youer@riseup.net microchipq@gmail.com])
-AC_CONFIG_SRCDIR([main.cc])
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_AUX_DIR(aux-dist)
+AC_CONFIG_MACRO_DIR(m4)
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
@@ -20,5 +20,5 @@ AC_PROG_CC
 
 # Checks for library functions.
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile include/Makefile src/Makefile])
 AC_OUTPUT
