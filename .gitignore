@@ -25,6 +25,7 @@
 *.DS_Store
 *.in
 *.in~
+.dirstamp
 
 m4/*
 aclocal.m4
