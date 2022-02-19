@@ -13,6 +13,8 @@ namespace flasher::net
 	private:
 		// TCP server name
 		std::string _name;
+		// TCP server socket
+		int _socket;
 		// TCP server address
 		union
 		{
