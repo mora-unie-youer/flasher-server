@@ -17,10 +17,10 @@ AC_PROG_CC
 AX_PTHREAD([], [AC_MSG_ERROR(`libpthread` is required)])
 
 # Checks for header files.
-AC_CHECK_HEADER([pqxx/pqxx], [
-	PQXX_LIBS=-lpqxx
+AC_CHECK_HEADERS([libpq-fe.h pqxx/pqxx], [
+	PQXX_LIBS="-lpq -lpqxx"
 	AC_SUBST([PQXX_LIBS])
-], [AC_MSG_ERROR(`libpqxx` is required)])
+], [AC_MSG_ERROR(`libpq` and `libpqxx` are required)])
 
 # Checks for typedefs, structures, and compiler characteristics.
 
