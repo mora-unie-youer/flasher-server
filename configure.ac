@@ -16,7 +16,7 @@ AC_PROG_CC
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADER([pqxx/pqxx])
+AC_CHECK_HEADER([pqxx/pqxx], [], [AC_MSG_ERROR(You need the `libpqxx` library.)])
 
 # Checks for typedefs, structures, and compiler characteristics.
 
