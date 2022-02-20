@@ -26,6 +26,7 @@
 *.in
 *.in~
 .dirstamp
+.vscode
 
 m4/*
 aclocal.m4
