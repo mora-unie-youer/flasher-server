@@ -14,9 +14,10 @@ AC_PROG_CXX
 AC_PROG_CC
 
 # Checks for libraries.
+AX_PTHREAD([], [AC_MSG_ERROR(`libpthread` is required)])
 
 # Checks for header files.
-AC_CHECK_HEADER([pqxx/pqxx], [], [AC_MSG_ERROR(You need the `libpqxx` library.)])
+AC_CHECK_HEADER([pqxx/pqxx], [], [AC_MSG_ERROR(`libpqxx` is required)])
 
 # Checks for typedefs, structures, and compiler characteristics.
 
