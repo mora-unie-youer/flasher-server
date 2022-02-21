@@ -34,6 +34,6 @@ namespace flasher::net
 
 	uint16_t IpAddr::getPort() const
 	{
-		return htons(_addr.ip4.sin_port);
+		return ntohs(_addr.ip4.sin_port);
 	}
 }
