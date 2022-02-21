@@ -1,9 +1,10 @@
 #ifndef __FLASHER__NET__TCP_H__
 #define __FLASHER__NET__TCP_H__
 
-#include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
+
+#include "net/addr.hh"
 
 namespace flasher::net
 {
@@ -16,29 +17,19 @@ namespace flasher::net
 		// TCP server socket
 		int _socket;
 		// TCP server address
-		union
-		{
-			// TCP IPv4 address
-			struct sockaddr_in  ip4;
-			// TCP IPv6 address
-			struct sockaddr_in6 ip6;
-		} _addr;
-		// Is TCP address IPv6?
-		bool _ipv6;
+		IpAddr _addr;
 	public:
-		/** Construct new TCP server
+		/**
+		 * @brief Construct new TCP server
+		 *
 		 * @param name name of server
-		 * @param addr TCP IPv4/IPv6 address
-		 * @param port TCP port
-		 * @param ipv6 Is `addr` IPv6?
+		 * @param addr TCP server address
 		 * @param reuseAddr Set SO_REUSEADDR option
 		 * @param reusePort Set SO_REUSEPORT option
 		 */
 		TcpServer(
 			const std::string &name,
-			const std::string &addr,
-			uint16_t port,
-			bool ipv6,
+			const IpAddr &addr,
 			bool reuseAddr = true,
 			bool reusePort = true
 		);
