@@ -1,8 +1,5 @@
 #include "net/tcp.hh"
 
-#include <arpa/inet.h>
-#include <cstring>
-
 namespace flasher::net
 {
 	TcpServer::TcpServer(
