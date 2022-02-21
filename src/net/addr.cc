@@ -16,11 +16,7 @@ namespace flasher::net
 		_addr.ip4.sin_family = family;
 		_addr.ip4.sin_port = htons(port);
 		// Parsing IP address
-		if (inet_pton(
-			family,
-			addr.c_str(),
-			&_addr.ip4.sin_addr
-		) <= 0)
+		if (inet_pton(family, addr.c_str(), &_addr.ip4.sin_addr) <= 0)
 			return;
 	}
 
